@@ -33,3 +33,13 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 ## Сборка образа ```docker```
 
 ```docker build . -t my-app```
+
+## Просмотр всех образов
+
+```docker images```
+
+## Запуск образа в контейнере
+
+```docker run -p 3000:3000 rails_conteiner```
+
+
