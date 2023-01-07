@@ -74,6 +74,12 @@ services:
     
 ```
 
+Можно отдельно вызывать команды:
+
+
+```cmd
+docker compose run app rake db:create
+```
 
 
 
