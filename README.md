@@ -134,7 +134,7 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 
 ```docker compose build```
 
-## Конфиг ``database.yml``` для Postgres
+## Конфиг ```database.yml``` для Postgres
 
 ```yml
 
