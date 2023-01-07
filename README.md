@@ -49,5 +49,32 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 ## Остановка контейнера
 ```docker stop id```
 
+## Docker-Compose
+
+```cmd
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: root
+  app:
+    image: rails_container
+    
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: db
+      DATABASE_URL: postgres://postgres@db
+      DATABASE_NAME: SportStore
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rake db:create && bundle exec rails s -p 3000 -b '0.0.0.0' "
+    
+```
+
+
+
 
 
