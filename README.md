@@ -1,24 +1,273 @@
-# README
+# Теория
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Все, что нужно приложению для запуска, включено. Образ Docker содержит код, среду выполнения, системные библиотеки и все остальное, что вы бы установили на сервер, чтобы заставить его работать, если бы вы не использовали Docker.
 
-Things you may want to cover:
+# Dockerfile
 
-* Ruby version
+```cmd
 
-* System dependencies
+# Dockerfile.rails
+FROM ruby:3.1.0 AS rails_container
 
-* Configuration
+#
+RUN apt-get update && apt-get install -y nodejs
 
-* Database creation
+#
+WORKDIR /app
 
-* Database initialization
+#
+COPY Gemfile* .
 
-* How to run the test suite
+#
+RUN bundle install
 
-* Services (job queues, cache servers, search engines, etc.)
+#
+COPY . .
 
-* Deployment instructions
+#
+EXPOSE 3000
+CMD ["rails", "server", "-b", "0.0.0.0"]
 
-* ...
+```
+Дополнительно:
+
+```cmd
+# Default directory
+ENV INSTALL_PATH /opt/app
+RUN mkdir -p $INSTALL_PATH
+```
+
+## Обрах для nginx
+```cmd
+# Dockerfile.nginx
+
+FROM nginx:latest
+COPY reverse-proxy.conf /etc/nginx/conf.d/reverse-proxy.conf
+EXPOSE 8020
+STOPSIGNAL SIGTERM
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+
+
+
+
+
+
+Взгляните на то, что делает каждая строка кода:
+
+- **FROM**: указывает Docker использовать указанный родительский образ в качестве отправной точки при создании образа. Поскольку вы создаете приложение Ruby, вы используете официальный образ Ruby, в котором Ruby предустановлен в качестве основы.
+- **RUN**: используется для запуска команд оболочки при создании образа Docker. В этом руководстве вы устанавливаете Node.js , потому что от него зависит Rails.
+- **WORKDIR**: устанавливает указанный каталог в качестве рабочего каталога внутри образа Docker. Любые дальнейшие команды, запускаемые в Dockerfile, будут выполняться в контексте этого каталога.
+- **COPY**: используется для копирования файлов с хост-компьютера в образ Docker. Синтаксис для этого COPY <source> <destination>.. Точка ( .) относится к текущему каталогу.
+- **EXPOSE**: сообщает Docker, что приложение будет прослушивать указанный порт при запуске контейнера. Эта команда в основном предназначена для документирования и фактически не открывает порт.
+- **CMD**: это основная точка входа в ваш образ Docker. Это команда, которая запускается всякий раз, когда создается контейнер.
+
+
+
+## Сборка образа ```docker```
+
+```docker build . -t my-app```
+  
+По имени Dockerfile:
+  
+```docker build -t rails-toolbox -f Dockerfile.rails . ```
+
+## Просмотр всех образов
+
+```docker images```
+
+## Запуск образа в контейнере
+
+```docker run -p 3000:3000 rails_conteiner```
+
+```docker run -it -v $PWD:/opt/app rails-toolbox rails new --skip-bundle drkiq```
+- -it: присоединяет ваш терминальный процесс к контейнеру.
+- -v $PWD:/opt/app: привязывает текущий каталог вашего хост-компьютера к контейнеру, поэтому файлы, созданные внутри, видны на вашем компьютере
+- rails new --skip-bundle drkiq: это команда, которую мы передаем образу Rails. Он создает новый проект под названием «drkiq».
+  
+**Замечание**: Rails new создает новый репозиторий git, но поскольку он у нас уже есть на верхнем уровне проекта, он нам не понадобится, его можно удалить:
+```rm -rf drkiq/.git```
+
+  
+## Просмотр запущенных контейнеров
+```docker container ls```
+
+## Остановка контейнера
+```docker stop id```
+
+## Docker-Compose
+
+```cmd
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: root
+  app:
+    image: rails_container
+    
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: db
+      DATABASE_URL: postgres://postgres@db
+      DATABASE_NAME: SportStore
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rake db:create && bundle exec rails s -p 3000 -b '0.0.0.0' "
+    
+```
+Пример запуска через ```docker compose```:
+
+```docker compose run --no-deps web rails new . --force --database=postgresql```
+
+Сначала Compose создает образ webслужбы с помощью файла ```Dockerfile```. Параметр --no-deps говоритне запускать связанные службы. Затем он запускается rails new внутри нового контейнера, используя этот образ
+
+
+
+Можно отдельно вызывать команды:
+
+
+```cmd
+docker compose run app rake db:create
+```
+
+## Точка входа ```Entrypoint.sh```
+ENTRYPOINT ["entrypoint.sh"]
+
+```cmd
+#!/bin/bash
+set -e
+
+# Remove a potentially pre-existing server.pid for Rails.
+rm -f /myapp/tmp/pids/server.pid
+
+# Then exec the container's main process (what's set as CMD in the Dockerfile).
+exec "$@"
+```
+
+
+
+## Примеры Dockerfile
+
+```cmd
+# syntax=docker/dockerfile:1
+FROM ruby:2.5
+RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
+WORKDIR /myapp
+COPY Gemfile /myapp/Gemfile
+COPY Gemfile.lock /myapp/Gemfile.lock
+RUN bundle install
+
+# Add a script to be executed every time the container starts.
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
+EXPOSE 3000
+
+# Configure the main process to run when running the image
+CMD ["rails", "server", "-b", "0.0.0.0"]
+
+```
+
+**Замечание**: Если вы используете Docker в Linux, rails newсозданные файлы принадлежат пользователю root. Это происходит потому, что контейнер работает от имени пользователя root. В этом случае измените владельца новых файлов.
+
+```$ sudo chown -R $USER:$USER .```
+
+**Замечание**: когда у вас есть новый ```Gemfile```, вам нужно снова собрать образ. (Это и изменения в Gemfile файле или Dockerfile должны быть единственными случаями, когда вам потребуется перестроить.)
+
+```docker compose build```
+
+## Конфиг ```database.yml``` для Postgres
+
+```yml
+
+default: &default 
+  adapter: postgresql 
+  pool: 25 
+  timeout: 5000 
+
+  encoding: unicode 
+development: 
+  <<: *default 
+  host: <%= ENV['POSTGRES_HOST'] || 'db' %> 
+  username: <%= ENV['POSTGRES_USER']%> 
+  password: <%= ENV['POSTGRES_PASSWORD']%> 
+  port: <%= ENV['POSTGRES_PORT'] || 5432 %> 
+  database: SportStore
+
+
+```
+
+## Перестройка приложения в контейнере
+
+```docker compose run web bundle install```
+```docker compose up --build```
+
+
+## .dockerignore
+```cmd
+.git
+.dockerignore
+.env
+drkiq/node_modules/
+drkiq/vendor/bundle/
+drkiq/tmp/  
+```
+
+## Развертывание контейнеров Docker
+- Хостинг
+- Paas
+- Kubernetes
+
+## Тома (Volumes)
+
+Docker поддерживает так называемые тома . Это точки монтирования, которые позволяют вам получать доступ к данным либо с собственного хоста, либо из другого контейнера. В нашем случае мы можем смонтировать папку нашего приложения в контейнер и не нужно создавать новый образ для каждого изменения.
+
+Просто укажите локальную папку, а также место ее монтирования в контейнере Docker при вызове docker run , и все готово!
+  
+```docker run -itP -v $(pwd):/app demo```
+  
+## Entrypoint
+
+Поскольку перед большинством команд, которые мы запускаем в контейнере Rails, будет стоять пакет exec , мы можем определить [ ENTRYPOINT ] для всех наших команд. Просто измените Dockerfile следующим образом:
+
+```cmd
+# Настройте точку входа, чтобы нам не нужно было 
+# указывать "bundle exec" для каждой из наших команд. 
+ENTRYPOINT ["bundle", "exec"] 
+# Основная команда для запуска при запуске контейнера. Также 
+# скажите серверу разработки Rails привязываться ко всем интерфейсам 
+# по умолчанию. 
+CMD ["рельсы", "сервер", "-b", "0.0.0.0"]
+```
+Теперь вы можете запускать команды без указания исполняемого пакета на консоли. Если вам нужно, вы также можете переопределить точку входа.  
+
+```cmd
+docker run -it demo "rake test" 
+docker run -it --entrypoint="" demo "ls -la"
+```
+
+## Locale
+  
+Если вас не устраивает локаль по умолчанию в вашем контейнере Docker, вы можете легко переключиться на другую. Установите необходимый пакет, повторно создайте локали и настройте переменные среды.
+  
+... 
+# Установите зависимости на основе apt, необходимые для запуска 
+# Rails, а также RubyGems. Поскольку сам образ Ruby основан на 
+# образе Debian, мы используем apt-get для их установки. 
+RUN apt-get update && apt-get install -y \ 
+  build-essential \ 
+  locales \ 
+  nodejs 
+# Использовать en_US.UTF-8 в качестве локали 
+RUN locale-gen en_US.UTF-8 ЯЗЫК 
+ENV en_US.UTF-8 
+ЯЗЫК ENV en_US:en 
+ENV LC_ALL en_US.UTF -8 
+...
+  
+>>>>>>> 12f3466edc8deed7b0e47a084d771c07c2e896b4
