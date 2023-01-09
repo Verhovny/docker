@@ -13,6 +13,20 @@ bcdedit /set hypervisorlaunchtype off
 bcdedit /set hypervisorlaunchtype off
 ``
 
+## Network
+
+адреса:
+ifconfig
+ip a
+
+роутинг:
+route
+ip r
+
+DNS:
+cat /etc/resolv.conf
+
+
 
 # Dockerfile
 
