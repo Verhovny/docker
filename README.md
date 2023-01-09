@@ -2,6 +2,18 @@
 
 Все, что нужно приложению для запуска, включено. Образ Docker содержит код, среду выполнения, системные библиотеки и все остальное, что вы бы установили на сервер, чтобы заставить его работать, если бы вы не использовали Docker.
 
+**Замечание:** 
+
+если применить VirtualBox, то надо отключить HyperV
+```cmd
+bcdedit /set hypervisorlaunchtype off
+```
+если использовать Docker Desctop в Windows 11
+```cmd
+bcdedit /set hypervisorlaunchtype off
+``
+
+
 # Dockerfile
 
 ```cmd
