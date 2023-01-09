@@ -51,6 +51,12 @@ AllowUsers <your_username>
 
 порт переопределяем для WSL не 22, а 2022
 
+##  Подключение по ssh к VirtualBox Ubuntu
+
+1. Сеть => NAT. Проброс портов с 22 гостя на любой хоста
+2. Сеть =Ю Сетевой мост. ssh iof@192.168.1.1
+
+
 # Dockerfile
 
 ```cmd
