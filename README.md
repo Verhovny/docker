@@ -30,16 +30,21 @@ cat /etc/resolv.conf
 ## Подключение по ssh к WSL Ubuntu
 
 ```sudo apt remove openssh-server```
+
 ```sudo apt install openssh-server```
 
 ```sudo nano /etc/ssh/sshd_config```
 
 PawordAuthentication   yes
+
 ChallengeResponseAuthentication no
+
 AllowUsers <your_username>
 
 ```sudo service ssh restart```
+
 ```sudo service ssh status```
+
 ```sudo service ssh --full-restart```
 
 ```sudo ssh -i key.pem ubuntu@<remote_host_ip>```
