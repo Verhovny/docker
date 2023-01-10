@@ -10,10 +10,10 @@ bcdedit /set hypervisorlaunchtype off
 ```
 если использовать Docker Desctop в Windows 11
 ```cmd
-bcdedit /set hypervisorlaunchtype off
+bcdedit /set hypervisorlaunchtype auto
 ```
 
-## Network
+## Network Linux
 
 адреса:
 ifconfig
