@@ -51,6 +51,20 @@ AllowUsers <your_username>
 
 порт переопределяем для WSL не 22, а 2022
 
+
+## Подключение к контейнеру docker по ssh
+
+```
+docker run --rm -ti -p 52022:22 ubuntu
+apt update && apt install openssh-server && apt install micro && apt install nano
+passwd # root password
+micro /etc/ssh/sshd_config или nano /etc/ssh/sshd_config
+Находим строку PermitRootLogin, раскомментируем и в ней прописываем yes.
+/etc/init.d/ssh start
+ssh -p 52022 root@127.0.0.1
+```
+
+
 ##  Подключение по ssh к VirtualBox Ubuntu
 
 1. Сеть => NAT. Проброс портов с 22 гостя на любой хоста
