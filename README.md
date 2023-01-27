@@ -50,7 +50,10 @@ AllowUsers <your_username>
 ```sudo ssh -i key.pem ubuntu@<remote_host_ip>```
 
 порт переопределяем для WSL не 22, а 2022
-
+Проверить работу сервиса ssh на wsl
+```
+ssh -p 2022 iof@localhost
+```
 
 ## Подключение к контейнеру docker по ssh
 
