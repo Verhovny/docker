@@ -8,7 +8,7 @@
 ```cmd
 bcdedit /set hypervisorlaunchtype off
 ```
-если использовать Docker Desctop в Windows 11
+если использовать Docker Desktop в Windows 11
 ```cmd
 bcdedit /set hypervisorlaunchtype auto
 ```
