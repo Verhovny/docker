@@ -35,11 +35,13 @@ cat /etc/resolv.conf
 
 ```sudo nano /etc/ssh/sshd_config```
 
-PawordAuthentication   yes
+Настройка
 
-ChallengeResponseAuthentication no
+```PasswordAuthentication   yes```
+```ChallengeResponseAuthentication no```
+```AllowUsers <your_username>```
+```PermitRootLogin yes``` для root
 
-AllowUsers <your_username>
 
 ```sudo service ssh restart```
 
@@ -51,6 +53,16 @@ AllowUsers <your_username>
 
 порт переопределяем для WSL не 22, а 2022
 Проверить работу сервиса ssh на wsl
+
+Можно ```FileZilla``` проверить по протоколу SFTP подключиться к удаленному серверу Ubuntu
+
+
+## Настройка пароля root
+```sudo passwd root```
+
+
+
+
 ```
 ssh -p 2022 iof@localhost
 ```
