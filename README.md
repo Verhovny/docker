@@ -76,6 +76,8 @@ cat /etc/resolv.conf
 ```sudo passwd root```
 
 
+
+
 ## Подключение к контейнеру ```docker``` по ```ssh```
 
 ```
@@ -87,6 +89,8 @@ micro /etc/ssh/sshd_config или nano /etc/ssh/sshd_config
 /etc/init.d/ssh start
 ssh -p 52022 root@127.0.0.1
 ```
+
+
 
 ## Подключение по ```ssh``` к ```VirtualBox``` ```Ubuntu```
 
@@ -106,6 +110,16 @@ ssh -p 52022 root@127.0.0.1
 ```docker container attach my_nginx```
 ```docker exec -i -t «CONTAINER ID» bash```
 
+
+
+
+
+
+
+
+
+
+
 ## Команды docker
 
 - docker ps -a — позволяет посмотреть, какие контейнеры находятся в системе;
@@ -116,22 +130,33 @@ ssh -p 52022 root@127.0.0.1
 - docker-compose up -d --no-deps –build — запуск compose контейнера;
 - docker rm «ID OR NAME CONTAINER» — удаление контейнера.
 
+
+
+
+
+
 ## Получить ip контейнера
 
 ```docker inspect -f "{{ .NetworkSettings.IPAddress }}" ssh_image_test```
+
+
+
+
+
+
+
+
 
 ## Получить ключ ```rsa``` сервера
 
 ```ssh-keyscan -t rsa server_ip```
 
 
-# Пример ```Dockerfile``` для ```Ruby on Rails```
+## Пример ```Dockerfile``` для ```Ruby on Rails```
 
 ```cmd
-
 # Dockerfile.rails
 FROM ruby:3.1.0 AS rails_container
-
 #
 RUN apt-get update && apt-get install -y nodejs
 
@@ -152,6 +177,7 @@ EXPOSE 3000
 CMD ["rails", "server", "-b", "0.0.0.0"]
 
 ```
+
 Дополнительно:
 
 ```cmd
@@ -159,6 +185,10 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 ENV INSTALL_PATH /opt/app
 RUN mkdir -p $INSTALL_PATH
 ```
+
+
+
+
 
 ## Обрах для nginx
 ```cmd
@@ -181,6 +211,10 @@ CMD ["nginx", "-g", "daemon off;"]
 - **CMD**: это основная точка входа в ваш образ Docker. Это команда, которая запускается всякий раз, когда создается контейнер.
 
 
+
+
+
+
 ## Сборка образа ```docker```
 
 ```docker build . -t my-app```
@@ -189,9 +223,24 @@ CMD ["nginx", "-g", "daemon off;"]
   
 ```docker build -t rails-toolbox -f Dockerfile.rails . ```
 
+
+
+
+
+
+
+
+
 ## Просмотр всех образов
 
 ```docker images```
+
+
+
+
+
+
+
 
 ## Запуск образа в контейнере
 
@@ -205,11 +254,27 @@ CMD ["nginx", "-g", "daemon off;"]
 **Замечание**: Rails new создает новый репозиторий git, но поскольку он у нас уже есть на верхнем уровне проекта, он нам не понадобится, его можно удалить:
 ```rm -rf drkiq/.git```
 
+
+
+
+
+
 ## Просмотр запущенных контейнеров
 ```docker container ls```
 
+
+
+
+
+
 ## Остановка контейнера
 ```docker stop id```
+
+
+
+
+
+
 
 ## ```Docker-Compose```
 
@@ -333,7 +398,11 @@ drkiq/vendor/bundle/
 drkiq/tmp/  
 ```
 
+
+
+
 ## Развертывание контейнеров Docker
+
 - Хостинг
 - Paas
 - Kubernetes
@@ -345,7 +414,10 @@ Docker поддерживает так называемые тома . Это т
 Просто укажите локальную папку, а также место ее монтирования в контейнере Docker при вызове docker run , и все готово!
   
 ```docker run -itP -v $(pwd):/app demo```
-  
+
+
+
+
 ## Entrypoint
 
 Поскольку перед большинством команд, которые мы запускаем в контейнере Rails, будет стоять пакет exec , мы можем определить [ ENTRYPOINT ] для всех наших команд. Просто измените Dockerfile следующим образом:
