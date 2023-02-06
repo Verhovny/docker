@@ -5,7 +5,7 @@
 - Kubernetes
 - Тестирование Web приложений
 - CI/CD
-- 
+
 Все, что нужно приложению для запуска, включено. Образ Docker содержит код, среду выполнения, системные библиотеки и все остальное, что вы бы установили на сервер, чтобы заставить его работать, если бы вы не использовали Docker.
 
 # Получить ключ ```rsa``` сервера
@@ -108,19 +108,26 @@ ssh -p 52022 root@127.0.0.1
 - docker build -t rails-toolbox -f Dockerfile.rails .
 - docker build . -t my-app
 
-## Перестройка приложения в контейнере
+- docker compose run web bundle install```
+- docker compose up --build```
+- docker compose run app rake db:create
 
-```docker compose run web bundle install```
-```docker compose up --build```
+# Команды
+
+### Собрать образ
+```docker build --tag imagename .```
+
+### Поднять образ
+```docker run imagename```
+
+### Собрать композицию образов
+```docker-compose build``` 
+
+### Поднять композицию образов c пересборкой
+```docker-compose up -d --build```
 
 
-Можно отдельно вызывать команды:
-
-```cmd
-docker compose run app rake db:create
-```
-
-## Тома (Volumes)
+# Тома (Volumes)
 
 Docker поддерживает так называемые тома . Это точки монтирования, которые позволяют вам получать доступ к данным либо с собственного хоста, либо из другого контейнера. В нашем случае мы можем смонтировать папку нашего приложения в контейнер и не нужно создавать новый образ для каждого изменения.
 
@@ -129,7 +136,7 @@ Docker поддерживает так называемые тома . Это т
 ```docker run -itP -v $(pwd):/app demo```
 
 
-## Entrypoint
+# Entrypoint
 
 Поскольку перед большинством команд, которые мы запускаем в контейнере Rails, будет стоять пакет exec , мы можем определить [ ENTRYPOINT ] для всех наших команд. Просто измените Dockerfile следующим образом:
 
@@ -149,40 +156,21 @@ docker run -it demo "rake test"
 docker run -it --entrypoint="" demo "ls -la"
 ```
 
-
-
 # Dockerfile для ```Ruby on Rails```
 
 ```cmd
 # Dockerfile.rails
 FROM ruby:3.1.0 AS rails_container
-#
 RUN apt-get update && apt-get install -y nodejs
-
-#
-WORKDIR /app
-
-#
-COPY Gemfile* .
-
-#
-RUN bundle install
-
-#
-COPY . .
-
-#
-EXPOSE 3000
-CMD ["rails", "server", "-b", "0.0.0.0"]
-
-```
-
-Дополнительно:
-
-```cmd
 # Default directory
 ENV INSTALL_PATH /opt/app
 RUN mkdir -p $INSTALL_PATH
+WORKDIR /app
+COPY Gemfile* .
+RUN bundle install
+COPY . .
+EXPOSE 3000
+CMD ["rails", "server", "-b", "0.0.0.0"]
 ```
 
 # Dockerfile Nginx
@@ -194,7 +182,7 @@ STOPSIGNAL SIGTERM
 CMD ["nginx", "-g", "daemon off;"]
 ```
  
-## Docker-Compose Rails + PostgreSQL
+# Docker-Compose Rails + PostgreSQL
 
 ```cmd
 services:
@@ -219,7 +207,7 @@ services:
     
 ```
 
-## Скрипт ```entrypoint.sh```
+# Скрипт ```entrypoint.sh```
 ENTRYPOINT ["entrypoint.sh"]
 
 ```cmd
@@ -233,7 +221,7 @@ rm -f /myapp/tmp/pids/server.pid
 exec "$@"
 ```
 
-## Dockerfile Rails
+# Dockerfile Rails
 
 ```cmd
 # syntax=docker/dockerfile:1
@@ -255,7 +243,7 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 
 ```
 
-## Конфиг Rails ```database.yml``` для Postgres
+# Конфиг Rails ```database.yml``` для Postgres
 
 ```yml
 
@@ -274,9 +262,7 @@ development:
   database: SportStore
 ```
 
-
-
-## Locale
+# Locale
   
 Если вас не устраивает локаль по умолчанию в вашем контейнере Docker, вы можете легко переключиться на другую. Установите необходимый пакет, повторно создайте локали и настройте переменные среды.
   
@@ -295,7 +281,7 @@ ENV en_US.UTF-8
 ENV LC_ALL en_US.UTF -8 
 ```
   
-## Пример Docker-Compose для Python Flask
+# Пример Docker-Compose для Python Flask
 
 ```cmd
 version: '3.9'
@@ -411,29 +397,27 @@ services:
 
 
 
-## Установка docker на Ubuntu 22.04
+# Установка docker на Ubuntu 22.04
 
-### Хороший мануал. Прочитать
+# Хороший мануал. Прочитать
 ```
 https://docs.docker.com/language/dotnet/develop/
 ```
 
-### Переключение docker между Windows и Linux
+# Переключение docker между Windows и Linux
 
 Если полетел docker на WSL2 после запуска на Windows
 
 В файле ```~/.docker/config.json``` будет "currentContext": "some-name"строчка. Вы можете удалить эту строку, чтобы вернуться к контексту по умолчанию. Если это последняя строка, обязательно удалите запятую в предыдущей строке, чтобы сохранить json действительным.
 
-
-
-## Установка docker-compose в WSL2
+# Установка docker-compose в WSL2
 ```
 sudo curl -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-## Добавление пользователя в sudo группу в Ubuntu
+# Добавление пользователя в sudo группу в Ubuntu
 
 ```
 usermod -aG sudo newuser
@@ -441,38 +425,28 @@ groups newuser
 su - newuser
 ```
 
-
-
 # Решение проблемы запуска docker в WSL
 
 Установщик докеров использует iptables для nat. К сожалению, Debian использует nftables. Вы можете преобразовать записи в nftables или просто настроить Debian для использования устаревших iptables.
 
 ```sudo update-alternatives --set iptables /usr/sbin/iptables-legacy```
-
 ```sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy```
-
 ```dockerd``` должен нормально запускаться после перехода на ```iptables-legacy```.
 
-
 # Просмотреть все активность сервисов
-
 ```sudo service --status-all```
-
 
 # Запуск контейнера из образа
 
 ```sudo docker run -p 3001:80 aspapiimage54```
-
 **Замечание**: -p 3001:80  => 3001 порт хоста, а 80 порт контейнера
 
 # Dockerfile for ASP Core 7
-
 ```cmd
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 COPY publish_output .
 ENTRYPOINT ["dotnet", "AspApiTest.dll"]c
 ```
-
 # Dockercompose for ASP Core (ASP + Postgres + Adminer)
 
 ```cmd
@@ -504,20 +478,6 @@ services:
     ports:
       - 8080:8080
 ```
-
-# Команды
-
-### Собрать образ
-```docker build --tag imagename .```
-
-### Поднять образ
-```docker run imagename```
-
-### Собрать композицию образов
-```docker-compose build``` 
-
-### Поднять композицию образов c пересборкой
-```docker-compose up -d --build```
 
 ## ASP Core + Postgres + Adminer
 ```
@@ -553,17 +513,13 @@ volumes:
 
 
 ```
-
-## Строка подключения appsettings.json для Docker
+# Строка подключения appsettings.json для Docker
 
 ```
  "PostgreSQL": "Host=db;Port=5432;Database=postgres;Username=postgres;Password=postgres",
 ```
 
----
-
-## Dockerfile для WEB API ASP Core
-
+# Dockerfile для WEB API ASP Core
 ```
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
@@ -585,8 +541,7 @@ COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "WebApiTestLinux.dll"]
 ```
 
-## Docker-compose for WEB API ASP Core
-
+# Docker-compose for WEB API ASP Core
 ```yml
 version: '3.4'
 
