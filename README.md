@@ -243,7 +243,7 @@ CMD ["rails", "server", "-b", "0.0.0.0"]
 
 ```
 
-# Конфиг Rails ```database.yml``` для Postgres
+# Конфиг Rails database.yml для Postgres
 
 ```yml
 
