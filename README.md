@@ -13,7 +13,7 @@
 ```ssh-keyscan -t rsa server_ip```
 
 # Включение виртуализации HyperV
-- если применить в ```VirtualBox```, то надо отключить ```HyperV``` в настройках операционной системы Windwos 11
+- если применить в ```VirtualBox```, то надо отключить ```HyperV``` в настройках операционной системы Windows 11
 ```cmd
 bcdedit /set hypervisorlaunchtype off
 ```
